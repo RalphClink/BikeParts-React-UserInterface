@@ -1,0 +1,160 @@
+/* Will use a grid to create a more asthethically pleasing website */
+#mainRenderContainer {
+    font-family: "Lucida Sans Typewriter", "Lucida Console", Monaco, "Bitstream Vera Sans Mono", monospace;
+    display: grid;
+    grid-template-columns: 1fr 20rem 20rem 40rem 1fr;
+}
+
+#mainRenderHeader {
+    grid-column: 1 / 6;
+    grid-row: 1;
+    background-color: lightgray;
+    display: flex;
+    justify-content: space-around;  
+    margin-bottom: 20px;
+}
+
+#mainRenderContent {
+    padding-top: 25px;
+    grid-column: 2 / 4;
+}
+
+#mainRenderTable {
+    grid-column: 4 / 5;
+    grid-row: 2;
+}
+
+
+/* Sort Part Styling */
+#sortPartMasterContainer {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+
+
+/* Default Values Styling */
+#defaultValuesMasterContainer {
+    margin-top: 20px;
+}
+
+
+/* Filter Part Styling */
+#filterPartMasterContainer {
+    display: flex;
+    margin-top: 20px;
+}
+
+
+/* Search Part Styling */
+#searchPartMasterContainer {
+    display: flex;
+    margin-top: 20px;
+    justify-content: space-around;
+}
+
+
+/* Save, Load & Delete Part Styling */
+#saveLoadPartsMasterContainer {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+
+/* Add Part Styling */
+#mainRenderAddPart {
+    grid-column: 2 / 4;
+    grid-row: 2;
+}
+
+#addPartMasterContainer {
+    border: 2px solid black;
+    padding: 5px;
+    margin-right: 5%;
+}
+
+h3 {
+    font-style: normal;
+    font-weight: normal;
+}
+
+#enterPartNameInput {
+    width: 77%;
+}
+
+#selectPartCategory {
+    width: 80%;
+}
+
+#enterPartPriceInput {
+    width: 77%;
+}
+
+#addPartButton {
+    margin-top: 10px;
+    width: 80%;
+}
+
+
+/* Delete Part Stuff */
+#mainRenderDeletePart {
+    grid-column: 2 / 4;
+    grid-row: 3;
+}
+
+#deletePartMasterContainer {
+    border: 2px solid black;
+    padding: 5px;
+}
+
+#deletePartSelect {
+    width: 80%;
+}
+
+#deletePartButton {
+    margin-top: 10px;
+    width: 80%;
+}
+
+
+/* Calculation 1 Styling */
+#mainCalculationTable {
+    display: flex;
+    grid-column: 3;
+}
+
+
+/* Parts Table Styling */
+#partsTableMasterContainer {
+    padding-left: 10px;
+    grid-column: 4;
+}
+
+#partsTable tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+
+/* Calculation Styling */
+#mainRenderCalculation {
+    text-align: center;
+    grid-column: 2 / 4;
+    grid-row: 4;
+}
+
+
+/* Edit Part Styling */
+#mainRenderEdit {
+    border: 2px solid black;
+    margin-left: 15px;
+    grid-column: 4 / 5;
+}
+
+
+/* Revert Part Styling */
+#revertPartContainer {
+    border: 2px solid black;
+    margin-top: 10px;
+}

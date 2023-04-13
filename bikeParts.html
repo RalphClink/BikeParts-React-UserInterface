@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bike Parts</title>
+
+  <link rel="stylesheet" type="text/css" href="stylesheet.css">
+
+  <!-- Load React. -->
+  <!-- Note: when deploying, replace "development.js" with "production.min.js". -->
+  <script crossorigin="anonymous" src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin="anonymous" src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Don't use this in production. It does a slow runtime code transformation. -->
+  <script crossorigin="anonymous" src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body>
+
+    <div id="root">
+    </div>
+    
+    <script type="text/babel">
+
+        class Part {
+            constructor(newId, newPartName, newPartCategory, newPartPrice) {
+                this.id = newId
+                this.partName = newPartName
+                this.partCategory = newPartCategory
+                this.partPrice = newPartPrice
+            }
+        }
+                
+        class PartsTable extends React.Component {
+            render () {
+                return (
+                    <table id="partsTable" border='1px'>
+                        <tbody>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Category</th>
+                            </tr>
+                            {this.props.data.map((part) => (
+                                <tr key={part.id}>
+                                   <td key={part.id}>{part.id}</td>
+                                   <td key={`${part.id}${part.partName}`}>{part.partName}</td>
+                                   <td key={`${part.id}${part.partPrice}`}>${part.partPrice}</td>
+                                   <td key={`${part.id}${part.partCategory}`}>{part.partCategory}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )
+            }
+        }
+
+        class PartsApp extends React.Component {
+            constructor(props) {
+                super(props)
+                this.state = {
+                    partsList: [],
+
+                    addPartName: null,
+                    addPartCategory: null,
+                    addPartPrice: null,
+                    deletePartId: null,
+                                        
+                    filterPartCategory: null,
+                    filterPartsList: [],
+                    
+                    searchPartName: null,
+                    searchPartList: [],
+                    
+                    renderMasterTable: true,
+                    renderFilterTable: false,
+                    renderSearchTable: false,
+                    
+                    calculation1Part: null,
+                    calculation1Quantity: null,
+                    calculation1Result: null,
+                    calculation2Result: null,
+                    
+                    editPartId: null,
+                    editPartSelected: false,
+                    editPartConfirmedId: null,
+                    editPartName: null,
+                    editPartCategory: null,
+                    editPartPrice: null,
+
+                    revertPartList: []
+                }
+
+                this.handleAddPartName = this.handleAddPartName.bind(this)
+                this.handleAddPartCategory = this.handleAddPartCategory.bind(this)
+                this.handleAddPartPrice = this.handleAddPartPrice.bind(this)
+                this.handleAddPartClick = this.handleAddPartClick.bind(this)
+                this.validateInputs = this.validateInputs.bind(this)
+
+                this.handleDeletePartSelect = this.handleDeletePartSelect.bind(this)
+                this.handleDeletePart = this.handleDeletePart.bind(this)
+
+                this.handleSortPartID = this.handleSortPartID.bind(this)
+                this.handleSortPartPrice = this.handleSortPartPrice.bind(this)  
+
+                this.handleSaveParts = this.handleSaveParts.bind(this)
+                this.handleLoadParts = this.handleLoadParts.bind(this)
+
+                this.setFilterTableState = this.setFilterTableState.bind(this)
+                this.setMasterTableState = this.setMasterTableState.bind(this)
+                this.handleFilterParts = this.handleFilterParts.bind(this)
+                this.handleFilterClick = this.handleFilterClick.bind(this)
+                
+                this.handleSearchPartNameChange = this.handleSearchPartNameChange.bind(this)
+                this.handleSearchPartName = this.handleSearchPartName.bind(this)
+                this.handleExitSearch = this.handleExitSearch.bind(this)
+
+                this.handleDefaultValues = this.handleDefaultValues.bind(this)
+
+                this.handleCalculation1SelectChange = this.handleCalculation1SelectChange.bind(this)
+                this.handleCalculation1InputChange = this.handleCalculation1InputChange.bind(this)
+                this.handleCalculation1 = this.handleCalculation1.bind(this)
+
+                this.handleCalculation2 = this.handleCalculation2.bind(this)
+
+                this.handleEditPartSelectChange = this.handleEditPartSelectChange.bind(this)
+                this.handleDisplayEditPart = this.handleDisplayEditPart.bind(this)
+                this.handleEditPartClick = this.handleEditPartClick.bind(this)
+                this.handleEditPartNameChange = this.handleEditPartNameChange.bind(this)
+                this.handleEditPartCategoryChange = this.handleEditPartCategoryChange.bind(this)
+                this.handleEditPartPriceChange = this.handleEditPartPriceChange.bind(this)
+                this.handleClearPartClick = this.handleClearPartClick.bind(this)
+
+                this.handleRevertPartChange = this.handleRevertPartChange.bind(this)
+                this.handleRevertPart = this.handleRevertPart.bind(this)
+                this.findRevertPartIndex = this.findRevertPartIndex.bind(this)
+                this.findRevertPartRevertIndex = this.findRevertPartRevertIndex.bind(this)
+            }
+
+
+
+            // Add Part Code
+            handleAddPartName (e) {
+                this.setState({ addPartName: e.target.value })
+            }
+
+            handleAddPartCategory (e) {
+                this.setState({ addPartCategory: e.target.value })
+            }
+
+            handleAddPartPrice (e) {
+                this.setState({ addPartPrice: parseInt(e.target.value) })
+            }
+
+            handleAddPartClick () {
+                //let tempID = Math.floor(Math.random() * 100)
+                let tempID = this.state.partsList.length + 1
+                let tempPart = new Part(tempID, this.state.addPartName, this.state.addPartCategory, this.state.addPartPrice)
+                let tempPartsList = this.state.partsList
+                tempPartsList.push(tempPart)
+                this.setState({ partsList: tempPartsList })
+            }
+
+            validateInputs() {
+                if (typeof this.state.addPartName == "string") {
+                    if (typeof this.state.addPartPrice == "number") {
+                        this.handleAddPartClick()
+                        return true
+                    }
+                }
+                alert("Invalid Inputs")
+            }
+
+            renderAddPart () {
+                return (
+                    <div id="addPartMasterContainer">    
+                        <div id="addPartHeaderContainer">
+                            <h2>Add a Part</h2>
+                        </div>
+                        <div id="addPartBarsContainer">
+                            <div id="addPartNameBar">
+                                <h3>Part Name</h3>
+                                <input id="enterPartNameInput" onChange={this.handleAddPartName}></input>
+                            </div>
+                            <div id="addPartCategoryBar">
+                                <h3>Part Category</h3>
+                                <select id="selectPartCategory" onChange={this.handleAddPartCategory}>
+                                    <option disabled selected value> -- select an option -- </option>
+                                    <option value="Wheels">Wheels</option>
+                                    <option value="Nutrition">Nutrition</option>
+                                    <option value="Accessories">Accessories</option>
+                                    <option value="Handle Bars">Handle Bars</option>
+                                </select>
+                            </div>
+                            <div id="addPartPriceBar">
+                                <h3>Part Price</h3>
+                                <input id="enterPartPriceInput" type="number" min="1" step="any" onChange={this.handleAddPartPrice}></input>
+                            </div>
+                        </div>                        
+                        <div id="addPartButtonContainer">
+                            <button id="addPartButton" onClick={this.validateInputs}>Add Part</button>
+                        </div>
+                    </div>
+                )
+            }
+
+
+
+            // Delete Part Code
+            handleDeletePartSelect (e) {
+                this.setState({ deletePartId: parseInt(e.target.value) })
+            }
+
+            findDeletePartIndex () {
+                let index = null
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    if (this.state.partsList[i].id == this.state.deletePartId) {
+                        index = i
+                    }
+                }
+                return index
+            }
+
+            handleDeletePart (e) {
+                let tempPartsList = this.state.partsList
+                tempPartsList.splice(this.findDeletePartIndex(), 1)
+                this.setState({ partsList: tempPartsList })
+            }
+
+            renderDeletePart () {
+                return (
+                    <div id="deletePartMasterContainer">
+                        <h2>Delete a Part</h2>
+                        <div id="deletePartSelectContainer">
+                            <select id="deletePartSelect" onChange={this.handleDeletePartSelect}>
+                                <option disabled selected value> -- select a part -- </option>
+                                {this.state.partsList.map((part => 
+                                    <option key={`${part.id}${part.partName}`} value={part.id}>{part.id} - {part.partName}</option>))}
+                            </select>
+                        </div>
+                        <div id="deletePartButtonContainer">
+                            <button id="deletePartButton" onClick={this.handleDeletePart}>Delete Part</button>
+                        </div>
+                    </div>
+                )
+            }
+
+            
+
+            // Sort Parts Code
+            handleSortPartID () {
+                this.state.partsList.sort(function(a, b) {
+                    return a.id - b.id
+                })
+                this.forceUpdate()
+            }
+
+            handleSortPartPrice () {
+                this.state.partsList.sort(function(a, b) {
+                    return a.partPrice - b.partPrice
+                })
+                this.forceUpdate()
+            }
+
+            renderSortPart () {
+                return (
+                    <div id="sortPartMasterContainer">
+                        <div id="sortPartByIDContainer">
+                            <button id="sortPartIDButton" onClick={this.handleSortPartID}>Sort by ID</button>
+                        </div>
+                        <div id="sortPartByPriceontainer">
+                            <button id="sortPartPriceButton" onClick={this.handleSortPartPrice}>Sort by Price</button>
+                        </div>
+                    </div>
+                )
+            }
+
+            
+
+            // Local Storage Code
+            handleSaveParts () {
+                const jsonArr = JSON.stringify(this.state.partsList)
+                localStorage.setItem("array", jsonArr)
+            }
+
+            handleDeleteStorage () {
+                localStorage.removeItem("array")
+            }
+
+            handleLoadParts () {
+                const str = localStorage.getItem("array")
+                const parsedArrr = JSON.parse(str);
+                this.setState({ partsList: parsedArrr })
+            }
+
+            renderSaveLoadDeleteParts() {
+                return (
+                    <div id="saveLoadPartsMasterContainer">
+                        <div id="savePartsContainer">
+                            <button id="savePartsButton" onClick={this.handleSaveParts}>Save Parts</button>
+                        </div>
+                        <div id="loadPartsContainer">
+                            <button id="loadPartsButton" onClick={this.handleLoadParts}>Load Parts</button>
+                        </div>
+                        <div id="deleteStorageContainer">
+                            <button id="deleteStorageButton" onClick={this.handleDeleteStorage}>Delete Storage</button>
+                        </div>
+                    </div>
+                )
+            }
+
+
+
+            // Filter part code
+            setFilterTableState() {
+                this.setState({ renderMasterTable: false, renderSearchTable: false, renderFilterTable: true })
+            }
+
+            setMasterTableState() {
+                this.setState({ renderFilterTable: false, renderSearchTable: false, renderMasterTable: true })
+            }
+
+            handleFilterParts(e) {
+                let tempArray = []
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    if (this.state.partsList[i].partCategory == e.target.value) {
+                        tempArray.push(this.state.partsList[i])
+                    }
+                }
+                this.setState({ filterPartCategory: e.target.value, filterPartsList: tempArray})
+            }
+            
+            handleFilterClick(e) {
+                this.handleFilterParts(e)
+                this.setFilterTableState()
+            }
+
+            renderFilterPart() {
+                return (  
+                    <div id="filterPartMasterContainer">
+                        <button id="filterWheelsButton" value="Wheels" onClick={this.handleFilterClick}>Wheels</button>
+                        <button id="filterNutritionButton" value="Nutrition" onClick={this.handleFilterClick}>Nutrition</button>
+                        <button id="filterAccessoriesButton" value="Accessories" onClick={this.handleFilterClick}>Accessories</button>
+                        <button id="filterHandleBarsButton" value="Handle Bars" onClick={this.handleFilterClick}>Handle Bars</button>
+                        <button id="resetFilterButton" onClick={this.setMasterTableState}>Remove Filter</button>
+                    </div>
+                )
+            }
+
+
+
+            // Search part code
+            handleSearchPartNameChange(e) {
+                this.setState({ searchPartName: e.target.value })
+            }
+
+            handleSearchPartName() {
+                let tempArray = []
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    if (this.state.partsList[i].partName == this.state.searchPartName) {
+                        tempArray.push(this.state.partsList[i])
+                    }
+                }
+                this.setState({ searchPartList: tempArray })
+                this.setState({ renderMasterTable: false })
+                this.setState({ renderFilterTable: false })
+                this.setState({ renderSearchTable: true })
+            }
+
+            handleExitSearch() {
+                this.setState({ searchPartList: [] })
+                this.setState({ renderMasterTable: true })
+                this.setState({ renderFilterTable: false })
+                this.setState({ renderSearchTable: false })
+            }
+
+            renderSearchPart() {
+                return (
+                    <div id="searchPartMasterContainer">
+                        <div id="searchPartInputContainer">
+                            <input id="enterSearchPartName" onChange={this.handleSearchPartNameChange}></input>
+                        </div>
+                        <div id="searchButtonContainer">
+                            <button id="enterSearchPartButton" onClick={this.handleSearchPartName}>Search</button>
+                        </div>
+                        <div id="exitSearchButtonContainer">
+                            <button id="exitSearchButton" onClick={this.handleExitSearch}>Return</button>
+                        </div>
+                    </div>
+                )
+            }
+
+
+
+            // Default values Code
+            handleDefaultValues() {
+                let tempArray = []
+                tempArray.push(new Part(1, "Spokes", "Wheels", 45.00))
+                tempArray.push(new Part(2, "Front Tyre", "Wheels", 30.00))
+                tempArray.push(new Part(3, "Protein Bar", "Nutrition", 4.00))
+                tempArray.push(new Part(4, "Energy Bar", "Nutrition", 4.00))
+                tempArray.push(new Part(5, "Bell", "Accessories", 20.00))
+                tempArray.push(new Part(6, "Reflective Lights", "Accessories", 25.00))
+                tempArray.push(new Part(7, "Rubber Grips", "Handle Bars", 20.00))
+                tempArray.push(new Part(8, "Gear Switch", "Handle Bars", 30.00))
+                this.setState({ partsList: tempArray })
+                this.setState({ renderMasterTable: true })
+                this.setState({ renderFilterTable: false })
+                this.setState({ renderSearchTable: false })
+            }
+
+            renderDefaultValues() {
+                return (
+                    <div id="defaultValuesMasterContainer">
+                        <button id="defaultValuesButton" onClick={this.handleDefaultValues}>Default Values</button>
+                    </div>
+                )
+            }
+
+
+
+            // Calculation 1 Part Code
+            handleCalculation1SelectChange(e) {
+                this.setState({ calculation1Part: parseInt(e.target.value) })
+            }
+
+
+            handleCalculation1InputChange(e) {
+                this.setState({ calculation1Quantity: parseInt(e.target.value) })
+            }
+
+            findCalculation1PartIndex() {
+                let index = null
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    if (this.state.partsList[i].id == this.state.calculation1Part) {
+                        index = i
+                    }
+                }
+                return index
+            }
+
+            handleCalculation1() {
+                let partIndex = this.findCalculation1PartIndex()
+                let totalCost = this.state.partsList[partIndex].partPrice * this.state.calculation1Quantity
+                this.setState({ calculation1Result: totalCost })
+            }
+
+            renderCalculation1() {
+                return (
+                    <div id="calculation1MasterContainer">
+                        <div id="calculation1MechanicsContainer">
+                            <select id="calculation1PartSelect" onChange={this.handleCalculation1SelectChange}>
+                                <option disabled selected value> -- select a part -- </option>
+                                {this.state.partsList.map((part => 
+                                <option key={`${part.id}${part.partName}`} value={part.id}>{part.id} - {part.partName}</option>))}
+                            </select>
+                            <input type="number" placeholder="Enter Quantity" onChange={this.handleCalculation1InputChange}></input>
+                            <button id="calculation1Button" onClick={this.handleCalculation1}>Calculate Multi Cost</button>
+                            <h3 hidden={this.state.calculation1Result === null}>${this.state.calculation1Result}</h3>
+                        </div>
+                    </div>
+                )
+            }
+
+
+
+            // Calculation 2 Code
+            handleCalculation2() {
+                let counter = 0
+                let totalCost = 0
+                let averageCost = 0
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    counter += 1
+                    totalCost += this.state.partsList[i].partPrice
+                }
+
+                averageCost = (totalCost / counter)
+                this.setState({ calculation2Result: averageCost})
+            }
+
+            renderCalculation2() {
+                return (
+                    <div id="calculation2MasterContainer">
+                        <button id="calculation2Button" onClick={this.handleCalculation2}>Calculate Average Cost of All Products</button>
+                        <h3 hidden={this.state.calculation2Result === null}>${this.state.calculation2Result}</h3>
+                    </div>
+                )
+            }
+
+
+
+            // Edit Part Code
+            findEditPartIndex() {
+                let index = null
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    if (this.state.partsList[i].id == this.state.editPartConfirmedId) {
+                        index = i
+                    }
+                }
+                return index
+            }
+            
+            handleEditPartSelectChange(e) {
+                this.setState({ editPartId: parseInt(e.target.value) })
+            }
+
+            handleDisplayEditPart(e) {
+                let tempEditPart = this.state.editPartId
+                this.setState({ editPartSelected: true, editPartConfirmedId: tempEditPart })
+            }
+
+            handleEditPartNameChange(e) {
+                this.setState({ editPartName: e.target.value })
+            }
+
+            handleEditPartCategoryChange(e) {
+                this.setState({ editPartCategory: e.target.value })
+            }
+
+            handleEditPartPriceChange(e) {
+                this.setState({ editPartPrice: e.target.value })
+            }
+            
+            handleEditPartClick() {
+                let tempRevertList = this.state.revertPartList
+                let index = this.findEditPartIndex()
+                let oldPartState = this.state.partsList[index]
+                let oldPart = new Part(oldPartState.id, oldPartState.partName, oldPartState.partCategory, oldPartState.partPrice)
+                tempRevertList.push(oldPart)
+                this.setState({ revertPartList: tempRevertList})                
+
+                let newPart = new Part(oldPartState.id, this.state.editPartName, this.state.editPartCategory, this.state.editPartPrice)
+                let tempPartsList = this.state.partsList
+                tempPartsList[index] = newPart
+                this.setState({ partsList: tempPartsList })
+            }
+
+            handleClearPartClick() {
+                this.setState({ editPartSelected: false })
+            }
+
+            renderEditPart() {
+                return (
+                    <div id="editPartMasterContainer">
+                        <h2>Edit Part</h2>
+                        <div id="editPartSelectionContainer">
+                            <select id="editPartSelect" onChange={this.handleEditPartSelectChange}>
+                                <option disabled selected value> -- select a part -- </option>
+                                {this.state.partsList.map((part => 
+                                <option key={`${part.id}${part.partName}`} value={part.id}>{part.id} - {part.partName}</option>))}
+                            </select>
+                            <button id="editPartSelectButton" onClick={this.handleDisplayEditPart}>Select Part</button>
+                            <button id="editPartClearButton" onClick={this.handleClearPartClick}>Clear Part</button>
+                        </div>
+
+                        <div id="editPartInputsContainer" hidden={this.state.editPartSelected === false}>
+                            <div id="editPartBarsContainer">
+                                <div id="editPartNameBar">
+                                    <h3>Edit Part Name</h3>
+                                    <input id="enterEditPartName" onChange={this.handleEditPartNameChange}></input>
+                                </div>
+                                <div id="editPartCategoryBar">
+                                    <h3>Edit Part Category</h3>
+                                    <select id="editPartCategory" onChange={this.handleEditPartCategoryChange}>
+                                        <option disabled selected value> -- select an option -- </option>
+                                        <option value="Wheels">Wheels</option>
+                                        <option value="Nutrition">Nutrition</option>
+                                        <option value="Accessories">Accessories</option>
+                                        <option value="Handle Bars">Handle Bars</option>
+                                    </select>
+                                </div>
+                                <div id="editPartPriceBar">
+                                    <h3>Edit Part Price</h3>
+                                    <input id="enterPartPriceInput" type="number" min="1" step="any" onChange={this.handleEditPartPriceChange}></input>
+                                </div>
+                            </div>                        
+                        <div id="editPartButtonContainer">
+                            <button id="editPartContainer" onClick={this.handleEditPartClick}>Edit Part</button>
+                        </div>
+
+                        </div>
+                    </div>
+                )
+            }
+
+
+            
+            // Revert part code
+            handleRevertPartChange(e) {
+                this.setState({ revertPartId: parseInt(e.target.value) })
+
+            }
+
+            findRevertPartIndex() {
+                let index = null
+                let partsListLength = this.state.partsList.length
+                for (let i = 0; i < partsListLength; i++) {
+                    if (this.state.partsList[i].id == this.state.revertPartId) {
+                        index = i
+                    }
+                }
+                return index
+            }
+
+            findRevertPartRevertIndex() {
+                let index = null
+                let revertPartListLength = this.state.revertPartList.length
+                for (let i = 0; i < revertPartListLength; i++) {
+                    if (this.state.revertPartList[i].id == this.state.revertPartId) {
+                        index = i
+                    }
+                }
+                return index
+            }
+
+            handleRevertPart() {
+                let tempPartArray = this.state.partsList
+                let tempRevertArray = this.state.revertPartList
+                let partListindex = this.findRevertPartIndex()
+                let revertPartListIndex = this.findRevertPartRevertIndex()
+                tempPartArray[partListindex] = tempRevertArray[revertPartListIndex]
+                tempRevertArray.splice(revertPartListIndex, 1)
+
+                this.setState({ partsList: tempPartArray, revertPartList: tempRevertArray})
+            }
+
+            renderRevertPart() {
+                return (
+                    <div id="revertPartContainer" hidden={this.state.revertPartList.length === 0}>
+                        <h2>Revert Part</h2>
+                        <select id="editPartSelect" onChange={this.handleRevertPartChange}>
+                            <option disabled selected value> -- select a part -- </option>
+                            {this.state.revertPartList.map((part => 
+                            <option key={`${part.id}${part.partName}`} value={part.id}>{part.id} - {part.partName}</option>))}
+                        </select>
+                        <button id="revertPartButton" onClick={this.handleRevertPart}>Revert Part to this Version</button>
+                    </div>
+                )
+            }
+
+
+
+            // Render tables code
+            renderMasterTable () {
+                if (this.state.renderMasterTable === true) {
+                    return (
+                        <div id="partsTableMasterContainer">
+                            <PartsTable data={this.state.partsList} />
+                            <br />
+                        </div>
+                    )
+                } else if (this.state.renderFilterTable === true) {
+                    return (
+                        <div id="partsTableMasterContainer">
+                            <PartsTable data={this.state.filterPartsList} />
+                            <br />
+                        </div>
+                    )
+                } else if (this.state.renderSearchTable === true) {
+                    return (
+                        <div id="partsTableMasterContainer">
+                            <PartsTable data={this.state.searchPartList} />
+                            <br />
+                        </div>
+                    )
+                }
+            }
+
+
+
+            // Master Render Method
+            render () {
+                return (
+                    <React.Fragment>
+                        <div id="mainRenderContainer">
+                            <div id="mainRenderHeader">
+                                { this.renderDefaultValues() }
+                                { this.renderSortPart() }
+                                { this.renderFilterPart() }
+                                { this.renderSearchPart() }
+                                { this.renderSaveLoadDeleteParts() }
+                            </div>
+                            <div id="mainRenderAddPart">
+                                { this.renderAddPart() }
+                            </div>
+                            <div id="mainRenderDeletePart">
+                                { this.renderDeletePart() }
+                            </div>
+                            <div id="mainRenderTable">
+                                { this.renderMasterTable() }
+                            </div>
+                            <div id="mainRenderCalculation">
+                                { this.renderCalculation1() }
+                                { this.renderCalculation2() }
+                            </div>
+                            <div id="mainRenderEdit">
+                                { this.renderEditPart() }
+                                { this.renderRevertPart() }
+                            </div>
+                        </div>
+                    </React.Fragment>
+                )    
+            }
+        }
+
+        const element = <PartsApp />
+        const container = document.querySelector('#root')
+        const root = ReactDOM.createRoot(container)
+        root.render(element)
+
+    </script>
+</body>
+</html>
